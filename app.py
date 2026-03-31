@@ -50,6 +50,11 @@ def iniciar_juego():
     st.session_state.texto_a_mostrar = " ".join(numeros_a_memorizar)
     st.session_state.intentos_usuario = {}
 
+    # Limpiar los inputs de la sesión anterior si existen
+    for key in list(st.session_state.keys()):
+        if key.startswith("input_grupo_"):
+            del st.session_state[key]
+
 def validar_resultados():
     for idx in range(len(st.session_state.numeros_a_memorizar)):
         # Guardamos el valor actual del input antes de cambiar de vista
