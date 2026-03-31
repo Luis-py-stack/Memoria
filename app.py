@@ -96,9 +96,11 @@ elif st.session_state.estado == 'input':
         )
 
     st.write("")
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
     with col2:
         st.button("Validar", on_click=validar_resultados, use_container_width=True)
+    with col3:
+        st.button("Terminar Juego", on_click=reiniciar_juego, use_container_width=True, type="secondary")
 
 elif st.session_state.estado == 'resultados':
     st.markdown("<h2 style='text-align: center;'>--- Resultados ---</h2>", unsafe_allow_html=True)
@@ -148,8 +150,9 @@ elif st.session_state.estado == 'resultados':
 
     st.write(f"Los números originales eran: **{st.session_state.texto_a_mostrar}**")
 
-    st.write("Gracias por jugar.")
+    # Bucle automático:
     st.write("")
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        st.button("Jugar de nuevo", on_click=reiniciar_juego, use_container_width=True)
+    st.info("Reiniciando en 1 segundo...")
+    time.sleep(1) # The user requested an interval of exactly 1 second between loops
+    iniciar_juego() # Generate new numbers and set state to memorizacion
+    st.rerun()
