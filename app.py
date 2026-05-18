@@ -20,8 +20,8 @@ header {visibility: hidden;}
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Variables de configuración originales
-cantidad_digitos_total = 10
-tamano_agrupacion = 10
+cantidad_digitos_total = 12
+tamano_agrupacion = 12
 tiempo_memorizacion = 1
 
 # --- Inicialización de Estado ---
