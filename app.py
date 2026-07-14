@@ -20,13 +20,17 @@ header {visibility: hidden;}
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Variables de configuración originales
-cantidad_digitos_total = 10
 tamano_agrupacion = 10
-tiempo_memorizacion = 1
 
 # --- Inicialización de Estado ---
 if 'estado' not in st.session_state:
     st.session_state.estado = 'inicio'
+if 'cantidad_digitos_total' not in st.session_state:
+    st.session_state.cantidad_digitos_total = 10
+if 'tiempo_memorizacion' not in st.session_state:
+    st.session_state.tiempo_memorizacion = 1
+if 'ciclo_actual' not in st.session_state:
+    st.session_state.ciclo_actual = 0
 if 'numeros_a_memorizar' not in st.session_state:
     st.session_state.numeros_a_memorizar = []
 if 'texto_a_mostrar' not in st.session_state:
@@ -37,9 +41,10 @@ if 'intentos_usuario' not in st.session_state:
 # --- Funciones de Transición ---
 def iniciar_juego():
     st.session_state.estado = 'memorizacion'
+    st.session_state.ciclo_actual += 1
 
     # Lógica original de generación
-    todos_los_digitos = [str(random.randint(0, 9)) for _ in range(cantidad_digitos_total)]
+    todos_los_digitos = [str(random.randint(0, 9)) for _ in range(st.session_state.cantidad_digitos_total)]
 
     numeros_a_memorizar = []
     for i in range(0, len(todos_los_digitos), tamano_agrupacion):
@@ -50,15 +55,10 @@ def iniciar_juego():
     st.session_state.texto_a_mostrar = " ".join(numeros_a_memorizar)
     st.session_state.intentos_usuario = {}
 
-    # Limpiar los inputs de la sesión anterior si existen
-    for key in list(st.session_state.keys()):
-        if key.startswith("input_grupo_"):
-            del st.session_state[key]
-
 def validar_resultados():
     for idx in range(len(st.session_state.numeros_a_memorizar)):
         # Guardamos el valor actual del input antes de cambiar de vista
-        st.session_state.intentos_usuario[idx] = st.session_state.get(f"input_grupo_{idx}", "")
+        st.session_state.intentos_usuario[idx] = st.session_state.get(f"input_grupo_{idx}_{st.session_state.ciclo_actual}", "")
     st.session_state.estado = 'resultados'
 
 def reiniciar_juego():
@@ -69,6 +69,14 @@ def reiniciar_juego():
 if st.session_state.estado == 'inicio':
     st.markdown("<h1 style='text-align: center;'>--- Juego de Memoria Numérica ---</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>El objetivo es memorizar una secuencia de números que aparecerán en pantalla.</p>", unsafe_allow_html=True)
+    st.write("")
+
+    col_settings_1, col_settings_2 = st.columns(2)
+    with col_settings_1:
+        st.number_input("Cantidad total de dígitos", min_value=1, key="cantidad_digitos_total")
+    with col_settings_2:
+        st.number_input("Tiempo de visualización (en segundos)", min_value=1, key="tiempo_memorizacion")
+
     st.write("")
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
@@ -82,10 +90,10 @@ elif st.session_state.estado == 'memorizacion':
         st.markdown("<h3 style='text-align: center;'>Memoriza los siguientes números:</h3>", unsafe_allow_html=True)
         # Mostrar números en grande y monoespaciado
         st.markdown(f"<h1 style='text-align: center; font-family: monospace; font-size: 5rem; letter-spacing: 0.2rem; color: #4CAF50;'>{st.session_state.texto_a_mostrar}</h1>", unsafe_allow_html=True)
-        st.markdown(f"<p style='text-align: center; font-size: 1.2rem;'>Tienes {tiempo_memorizacion} segundo(s)...</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: center; font-size: 1.2rem;'>Tienes {st.session_state.tiempo_memorizacion} segundo(s)...</p>", unsafe_allow_html=True)
 
         # Pausa y transición automática
-        time.sleep(tiempo_memorizacion)
+        time.sleep(st.session_state.tiempo_memorizacion)
         st.session_state.estado = 'input'
         st.rerun()
 
@@ -97,7 +105,8 @@ elif st.session_state.estado == 'input':
     for idx, numero_original_str in enumerate(st.session_state.numeros_a_memorizar):
         st.text_input(
             f"Ingresa el grupo {idx + 1}:",
-            key=f"input_grupo_{idx}"
+            key=f"input_grupo_{idx}_{st.session_state.ciclo_actual}",
+            on_change=validar_resultados
         )
 
     st.write("")
